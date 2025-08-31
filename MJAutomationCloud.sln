@@ -2,6 +2,14 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MJAutomationCloud", "MJAutomationCloud\MJAutomationCloud.csproj", "{1C9B79EE-DCEF-419E-8249-24136A5B4442}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "layers", "layers", "{BC31ED92-8505-4DC0-859F-2E2BFD04618C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MJAutomationCloud.Infrastructure", "MJAutomationCloud.Infrastructure\MJAutomationCloud.Infrastructure.csproj", "{AE8EB1FD-C9A4-4E8C-9F69-61C94FD8CE05}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MJAutomationCloud.Domain", "MJAutomationCloud.Domain\MJAutomationCloud.Domain.csproj", "{457843B7-AED7-44B7-A740-CA3B28A933ED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MJAutomationCloud.Application", "MJAutomationCloud.Application\MJAutomationCloud.Application.csproj", "{7AE79FEA-8D77-4D1B-A56B-5147AE3CFCE7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +20,22 @@ Global
 		{1C9B79EE-DCEF-419E-8249-24136A5B4442}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1C9B79EE-DCEF-419E-8249-24136A5B4442}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1C9B79EE-DCEF-419E-8249-24136A5B4442}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE8EB1FD-C9A4-4E8C-9F69-61C94FD8CE05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE8EB1FD-C9A4-4E8C-9F69-61C94FD8CE05}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE8EB1FD-C9A4-4E8C-9F69-61C94FD8CE05}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE8EB1FD-C9A4-4E8C-9F69-61C94FD8CE05}.Release|Any CPU.Build.0 = Release|Any CPU
+		{457843B7-AED7-44B7-A740-CA3B28A933ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{457843B7-AED7-44B7-A740-CA3B28A933ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{457843B7-AED7-44B7-A740-CA3B28A933ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{457843B7-AED7-44B7-A740-CA3B28A933ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7AE79FEA-8D77-4D1B-A56B-5147AE3CFCE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7AE79FEA-8D77-4D1B-A56B-5147AE3CFCE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7AE79FEA-8D77-4D1B-A56B-5147AE3CFCE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7AE79FEA-8D77-4D1B-A56B-5147AE3CFCE7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{AE8EB1FD-C9A4-4E8C-9F69-61C94FD8CE05} = {BC31ED92-8505-4DC0-859F-2E2BFD04618C}
+		{457843B7-AED7-44B7-A740-CA3B28A933ED} = {BC31ED92-8505-4DC0-859F-2E2BFD04618C}
+		{7AE79FEA-8D77-4D1B-A56B-5147AE3CFCE7} = {BC31ED92-8505-4DC0-859F-2E2BFD04618C}
 	EndGlobalSection
 EndGlobal
