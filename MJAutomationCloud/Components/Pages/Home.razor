@@ -1,7 +1,122 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Home - MJAutomationCloud</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="welcome-section">
+                <h1 class="display-4">
+                    <i class="bi bi-cloud-fill text-primary me-3"></i>
+                    Welcome to MJAutomationCloud
+                </h1>
 
-Welcome to your new app.
+                <AuthorizeView>
+                    <Authorized>
+                        <p class="lead">
+                            Hello, <strong>@context.User.Identity?.Name</strong>!
+                            You have successfully logged in with two-factor authentication.
+                        </p>
+
+                        <div class="alert alert-success d-flex align-items-center" role="alert">
+                            <i class="bi bi-shield-check-fill me-2"></i>
+                            <div>
+                                Your account is secured with two-factor authentication.
+                            </div>
+                        </div>
+                    </Authorized>
+                </AuthorizeView>
+
+                <div class="row mt-5">
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="bi bi-shield-lock-fill text-primary" style="font-size: 3rem;"></i>
+                                <h5 class="card-title mt-3">Secure Authentication</h5>
+                                <p class="card-text">
+                                    Your account is protected with industry-standard two-factor authentication.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="bi bi-layers-fill text-success" style="font-size: 3rem;"></i>
+                                <h5 class="card-title mt-3">DDD Architecture</h5>
+                                <p class="card-text">
+                                    Built with Domain-Driven Design principles for maintainable and scalable code.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="bi bi-lightning-fill text-warning" style="font-size: 3rem;"></i>
+                                <h5 class="card-title mt-3">Blazor Server</h5>
+                                <p class="card-text">
+                                    Powered by .NET 8 Blazor Server for real-time, interactive web applications.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h3>Quick Actions</h3>
+                    <div class="btn-group" role="group">
+                        <a href="/counter" class="btn btn-primary">
+                            <i class="bi bi-plus-square me-2"></i>
+                            Counter Demo
+                        </a>
+                        <a href="/weather" class="btn btn-outline-primary">
+                            <i class="bi bi-cloud-sun me-2"></i>
+                            Weather Demo
+                        </a>
+                        <a href="/Account/TwoFactor" class="btn btn-outline-secondary">
+                            <i class="bi bi-shield-lock me-2"></i>
+                            2FA Settings
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .welcome-section {
+        padding: 2rem 0;
+    }
+
+    .card {
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+
+    .btn-group .btn {
+        margin-right: 0.5rem;
+    }
+
+    .btn-group .btn:last-child {
+        margin-right: 0;
+    }
+
+    @@media (max-width: 768px) {
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .btn-group .btn {
+            margin-right: 0;
+        }
+    }
+</style>

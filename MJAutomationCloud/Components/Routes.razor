@@ -1,6 +1,43 @@
-﻿<Router AppAssembly="typeof(Program).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)"/>
-        <FocusOnNavigate RouteData="routeData" Selector="h1"/>
-    </Found>
-</Router>
+﻿<CascadingAuthenticationState>
+    <Router AppAssembly="typeof(Program).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+                <NotAuthorized>
+                    @if (context.User.Identity?.IsAuthenticated != true)
+                    {
+                        <RedirectToLogin />
+                    }
+                    else
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <h4 class="alert-heading">Access Denied</h4>
+                            <p>You are not authorized to access this page.</p>
+                        </div>
+                    }
+                </NotAuthorized>
+                <Authorizing>
+                    <div class="d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+                        <div class="text-center">
+                            <div class="spinner-border text-primary mb-3" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p>Checking authentication...</p>
+                        </div>
+                    </div>
+                </Authorizing>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="routeData" Selector="h1"/>
+        </Found>
+        <NotFound>
+            <PageTitle>Not found</PageTitle>
+            <LayoutView Layout="typeof(Layout.MainLayout)">
+                <div class="alert alert-warning" role="alert">
+                    <h4 class="alert-heading">Page Not Found</h4>
+                    <p>Sorry, there's nothing at this address.</p>
+                    <hr>
+                    <a href="/" class="btn btn-primary">Go Home</a>
+                </div>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

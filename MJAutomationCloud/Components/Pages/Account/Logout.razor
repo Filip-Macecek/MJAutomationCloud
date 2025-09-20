@@ -1,0 +1,84 @@
+@page "/Account/Logout"
+@using Microsoft.AspNetCore.Components.Authorization
+@using MJAutomationCloud.Infrastructure.Interfaces
+
+@inject IAuthenticationService AuthService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+<PageTitle>Signing Out - MJAutomationCloud</PageTitle>
+
+<div class="logout-container">
+    <div class="logout-card">
+        <div class="text-center">
+            <div class="logout-icon mb-4">
+                <i class="bi bi-box-arrow-right text-primary" style="font-size: 4rem;"></i>
+            </div>
+            
+            <h4 class="mb-3">Signing Out...</h4>
+            <p class="text-muted">
+                Please wait while we securely sign you out.
+            </p>
+            
+            <div class="spinner-border text-primary mt-3" role="status">
+                <span class="visually-hidden">Signing out...</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .logout-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+    }
+
+    .logout-card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        padding: 3rem;
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .logout-icon {
+        animation: fadeInScale 0.6s ease-out;
+    }
+
+    @@keyframes fadeInScale {
+        0% {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+</style>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // Get current user ID for logging
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+        // Perform logout
+        if (!string.IsNullOrEmpty(userId))
+        {
+            await AuthService.LogoutAsync(userId);
+        }
+
+        // Small delay for UX
+        await Task.Delay(1000);
+
+        // Redirect to login page
+        Navigation.NavigateTo("/Account/Login", replace: true);
+    }
+}

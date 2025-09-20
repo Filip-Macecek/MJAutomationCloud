@@ -1,0 +1,396 @@
+@page "/Account/Login"
+@rendermode InteractiveServer
+@attribute [AllowAnonymous]
+@using Microsoft.Extensions.Configuration
+@using MJAutomationCloud.Infrastructure.Interfaces
+@using MJAutomationCloud.Infrastructure.Models
+
+@inject IAuthenticationService AuthService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IConfiguration Configuration
+
+<PageTitle>Login - MJAutomationCloud</PageTitle>
+
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h2>Sign In</h2>
+            <p class="text-muted">Enter your credentials to access MJAutomationCloud</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                @errorMessage
+            </div>
+        }
+
+        @if (showTwoFactorForm)
+        {
+            <!-- Two-Factor Authentication Form -->
+            <EditForm Model="twoFactorRequest" OnValidSubmit="HandleTwoFactorSubmit" FormName="TwoFactorForm">
+                <DataAnnotationsValidator />
+
+                <div class="two-factor-section">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-shield-lock-fill text-primary" style="font-size: 3rem;"></i>
+                        <h4 class="mt-2">Two-Factor Authentication</h4>
+                        <p class="text-muted">Enter the 6-digit code from your authenticator app</p>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="twoFactorCode" class="form-label">Authentication Code</label>
+                        <InputText @bind-Value="twoFactorRequest.Code"
+                                   class="form-control form-control-lg text-center"
+                                   id="twoFactorCode"
+                                   placeholder="000000"
+                                   maxlength="6"
+                                   autocomplete="one-time-code" />
+                        <ValidationMessage For="() => twoFactorRequest.Code" class="text-danger" />
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <InputCheckbox @bind-Value="twoFactorRequest.IsRecoveryCode"
+                                       class="form-check-input"
+                                       id="isRecoveryCode" />
+                        <label class="form-check-label" for="isRecoveryCode">
+                            This is a recovery code
+                        </label>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg" disabled="@isLoading">
+                            @if (isLoading)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                <span>Verifying...</span>
+                            }
+                            else
+                            {
+                                <i class="bi bi-check-circle me-2"></i>
+                                <span>Verify</span>
+                            }
+                        </button>
+
+                        <button type="button" class="btn btn-outline-secondary" @onclick="CancelTwoFactor">
+                            <i class="bi bi-arrow-left me-2"></i>
+                            Back to Login
+                        </button>
+                    </div>
+                </div>
+            </EditForm>
+        }
+        else
+        {
+            <!-- Login Form -->
+            <EditForm Model="loginRequest" OnValidSubmit="HandleLoginSubmit" FormName="LoginForm">
+                <DataAnnotationsValidator />
+
+                <div class="form-group mb-3">
+                    <label for="email" class="form-label">Email Address</label>
+                    <InputText @bind-Value="loginRequest.Email"
+                               class="form-control"
+                               id="email"
+                               placeholder="Enter your email"
+                               autocomplete="username" />
+                    <ValidationMessage For="() => loginRequest.Email" class="text-danger" />
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-group">
+                        <InputText @bind-Value="loginRequest.Password"
+                                   type="@(showPassword ? "text" : "password")"
+                                   class="form-control"
+                                   id="password"
+                                   placeholder="Enter your password"
+                                   autocomplete="current-password" />
+                        <button type="button"
+                                class="btn btn-outline-secondary"
+                                @onclick="TogglePasswordVisibility">
+                            <i class="bi @(showPassword ? "bi-eye-slash" : "bi-eye")"></i>
+                        </button>
+                    </div>
+                    <ValidationMessage For="() => loginRequest.Password" class="text-danger" />
+                </div>
+
+                <div class="form-check mb-3">
+                    <InputCheckbox @bind-Value="loginRequest.RememberMe"
+                                   class="form-check-input"
+                                   id="rememberMe" />
+                    <label class="form-check-label" for="rememberMe">
+                        Remember me
+                    </label>
+                </div>
+
+                @if (showDevBypass)
+                {
+                    <div class="alert alert-warning" role="alert">
+                        <div class="form-check">
+                            <InputCheckbox @bind-Value="loginRequest.DevBypass"
+                                           class="form-check-input"
+                                           id="devBypass" />
+                            <label class="form-check-label" for="devBypass">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                <strong>Development Mode:</strong> Skip 2FA (Testing Only)
+                            </label>
+                        </div>
+                    </div>
+                }
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg" disabled="@isLoading">
+                        @if (isLoading)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                            <span>Signing In...</span>
+                        }
+                        else
+                        {
+                            <i class="bi bi-box-arrow-in-right me-2"></i>
+                            <span>Sign In</span>
+                        }
+                    </button>
+                </div>
+            </EditForm>
+        }
+
+        <div class="login-footer mt-4">
+            <div class="text-center">
+                <a href="/Account/ForgotPassword" class="text-decoration-none">
+                    <i class="bi bi-question-circle me-1"></i>
+                    Forgot your password?
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .login-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 2rem;
+    }
+
+    .login-card {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        padding: 3rem;
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .login-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .login-header h2 {
+        color: #1f2937;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        font-weight: 600;
+        padding: 0.75rem;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .two-factor-section {
+        text-align: center;
+    }
+
+    .two-factor-section .form-control {
+        font-family: 'Courier New', monospace;
+        font-size: 1.5rem;
+        letter-spacing: 0.5rem;
+        padding: 1rem;
+    }
+
+    .login-footer {
+        border-top: 1px solid #e5e7eb;
+        padding-top: 1rem;
+    }
+
+    .login-footer a {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+
+    .login-footer a:hover {
+        color: #667eea;
+    }
+
+    .alert {
+        border: none;
+        border-radius: 0.5rem;
+    }
+
+    .alert-danger {
+        background-color: #fef2f2;
+        color: #dc2626;
+    }
+
+    .alert-warning {
+        background-color: #fffbeb;
+        color: #d97706;
+        border-left: 4px solid #f59e0b;
+    }
+
+    @@media (max-width: 576px) {
+        .login-container {
+            padding: 1rem;
+        }
+
+        .login-card {
+            padding: 2rem;
+        }
+    }
+</style>
+
+@code {
+    private LoginRequest loginRequest = new();
+    private TwoFactorRequest twoFactorRequest = new();
+    private string errorMessage = string.Empty;
+    private bool isLoading = false;
+    private bool showTwoFactorForm = false;
+    private bool showPassword = false;
+    private bool showDevBypass = false;
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Check if user is already authenticated
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        if (authState.User.Identity?.IsAuthenticated == true)
+        {
+            Navigation.NavigateTo(ReturnUrl ?? "/", replace: true);
+            return;
+        }
+
+        // Check if development bypass should be shown
+        var isDevelopment = Configuration.GetValue<string>("ASPNETCORE_ENVIRONMENT") == "Development";
+        var allowDevBypass = Configuration.GetValue<bool>("Authentication:AllowDevBypass");
+        showDevBypass = isDevelopment && allowDevBypass;
+    }
+
+    private async Task HandleLoginSubmit()
+    {
+        if (isLoading) return;
+
+        isLoading = true;
+        errorMessage = string.Empty;
+
+        try
+        {
+            var result = await AuthService.LoginAsync(loginRequest);
+
+            if (result.IsSuccess)
+            {
+                // Login successful, redirect to return URL or home
+                await RefreshAuthenticationState();
+                Navigation.NavigateTo(ReturnUrl ?? "/", replace: true);
+            }
+            else if (result.RequiresTwoFactor)
+            {
+                // Setup 2FA form
+                twoFactorRequest.UserId = result.UserId!;
+                twoFactorRequest.RememberMe = loginRequest.RememberMe;
+                showTwoFactorForm = true;
+            }
+            else if (result.IsLockedOut)
+            {
+                var timeRemaining = result.LockoutTimeRemaining?.ToString(@"mm\:ss") ?? "unknown";
+                errorMessage = $"Account locked. Try again in {timeRemaining}.";
+            }
+            else
+            {
+                errorMessage = result.ErrorMessage ?? "Login failed. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "An unexpected error occurred. Please try again.";
+            // Log the exception in a real application
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleTwoFactorSubmit()
+    {
+        if (isLoading) return;
+
+        isLoading = true;
+        errorMessage = string.Empty;
+
+        try
+        {
+            var result = await AuthService.VerifyTwoFactorAsync(twoFactorRequest);
+
+            if (result.IsSuccess)
+            {
+                // 2FA verification successful
+                await RefreshAuthenticationState();
+                Navigation.NavigateTo(ReturnUrl ?? "/", replace: true);
+            }
+            else
+            {
+                errorMessage = result.ErrorMessage ?? "Invalid authentication code. Please try again.";
+                twoFactorRequest.Code = string.Empty; // Clear the code field
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "An unexpected error occurred. Please try again.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void CancelTwoFactor()
+    {
+        showTwoFactorForm = false;
+        twoFactorRequest = new();
+        errorMessage = string.Empty;
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        showPassword = !showPassword;
+    }
+
+    private async Task RefreshAuthenticationState()
+    {
+        if (AuthStateProvider is IHostEnvironmentAuthenticationStateProvider revalidatingProvider)
+        {
+            revalidatingProvider.SetAuthenticationState(Task.FromResult(new AuthenticationState(new System.Security.Claims.ClaimsPrincipal())));
+        }
+    }
+}
