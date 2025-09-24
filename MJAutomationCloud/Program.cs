@@ -61,7 +61,7 @@ builder.Services.AddHealthChecks();
 var app = builder.Build();
 
 // Ensure database is created and seeded (Development/Staging only)
-if (app.Environment.IsDevelopment() || app.Environment.IsStaging())
+if (app.Environment.IsDevelopment())
 {
     using (var scope = app.Services.CreateScope())
     {

@@ -1,0 +1,70 @@
+# .dockerignore for MJAutomationCloud
+
+# Build artifacts
+**/bin/
+**/obj/
+**/out/
+
+# Runtime artifacts
+**/*.db
+**/*.db-shm
+**/*.db-wal
+
+# IDE and development files
+**/.vs/
+**/.vscode/
+**/.idea/
+**/*.user
+**/*.suo
+**/*.sln.docstates
+
+# OS files
+**/Thumbs.db
+**/.DS_Store
+**/desktop.ini
+
+# Logs
+**/logs/
+**/*.log
+
+# Runtime directories
+**/wwwroot/lib/
+
+# Package files
+**/*.nupkg
+**/*.snupkg
+
+# Git
+**/.git/
+**/.gitignore
+**/.gitattributes
+
+# Docker files (don't copy into container)
+**/Dockerfile*
+**/docker-compose*
+**/.dockerignore
+
+# Node modules (if any)
+**/node_modules/
+
+# Test results
+**/TestResults/
+**/coverage/
+
+# Temporary files
+**/tmp/
+**/temp/
+
+# User secrets and local settings
+**/appsettings.Development.json
+**/appsettings.Local.json
+**/*.Development.json
+**/secrets.json
+
+# Documentation
+**/*.md
+**/docs/
+
+# Backup files
+**/*.bak
+**/*.backup
