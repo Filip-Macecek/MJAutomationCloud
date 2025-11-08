@@ -1,0 +1,104 @@
+@page "/account/register"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<MJAutomationCloud.Infrastructure.Entities.ApplicationUser> UserManager
+@inject NavigationManager Nav
+@inject ILogger<Register> Logger
+
+<h3>Register</h3>
+
+@if (_success)
+{
+    <div class="alert alert-success">Account created. Redirecting to 2FA setup...</div>
+}
+
+<EditForm Model="_model" OnValidSubmit="OnSubmit" FormName="RegisterForm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <div class="mb-3">
+        <label>Email</label>
+        <InputText @bind-Value="_model.Email" class="form-control" name="Email" id="email" />
+    </div>
+    <div class="mb-3">
+        <label>Password</label>
+        <InputText @bind-Value="_model.Password" class="form-control" type="password" name="Password" id="password" autocomplete="new-password" />
+        @if(!string.IsNullOrEmpty(_passwordFeedback))
+        {
+            <small class="text-muted">@_passwordFeedback</small>
+        }
+    </div>
+    <button disabled="@_busy" class="btn btn-primary" type="submit">Register</button>
+</EditForm>
+
+@code {
+    private RegisterModel _model = new();
+    private bool _busy;
+    private bool _success;
+    private string? _passwordFeedback;
+
+    private async Task OnSubmit()
+    {
+        _busy = true;
+        _passwordFeedback = PasswordStrengthMessage(_model.Password);
+        if (_passwordFeedback != null)
+        {
+            _busy = false; // block submit when feedback present (weak password)
+            return;
+        }
+        try
+        {
+            var user = new MJAutomationCloud.Infrastructure.Entities.ApplicationUser
+            {
+                UserName = _model.Email,
+                Email = _model.Email,
+                EmailConfirmed = true,
+                CreatedAt = DateTime.UtcNow,
+                IsActive = true
+            };
+            var result = await UserManager.CreateAsync(user, _model.Password);
+            Logger.LogInformation("Registration attempt for {Email}: {Result}", _model.Email, result.Succeeded);
+            if (result.Succeeded)
+            {
+                _success = true;
+                // Force authenticator key creation for setup flow
+                await UserManager.ResetAuthenticatorKeyAsync(user);
+                Nav.NavigateTo($"/account/2fa-setup?email={Uri.EscapeDataString(_model.Email)}", true);
+            }
+            else
+            {
+                foreach (var error in result.Errors)
+                {
+                    _passwordFeedback += $"\n{error.Description}";
+                }
+            }
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private string? PasswordStrengthMessage(string password)
+    {
+        if (string.IsNullOrWhiteSpace(password)) return "Password required";
+        if (password.Length < 12) return "Password must be at least 12 characters";
+        // int categories = 0;
+        // if (password.Any(char.IsUpper)) categories++;
+        // if (password.Any(char.IsLower)) categories++;
+        // if (password.Any(char.IsDigit)) categories++;
+        // if (password.Any(c => "!@#$%^&*()_-+=[]{}:;'<>,.?/".Contains(c))) categories++;
+        // if (categories < 3) return "Use at least three of: upper, lower, digit, symbol";
+        // // discourage overly random symbols sequences (basic heuristic)
+        // var symbols = password.Count(c => "!@#$%^&*()_-+=[]{}:;'<>,.?/".Contains(c));
+        // if (symbols > password.Length / 2) return "Too many symbols; prefer mix for usability";
+        return null;
+    }
+
+    public class RegisterModel
+    {
+        [Required, EmailAddress]
+        public string Email { get; set; } = string.Empty;
+        [Required]
+        public string Password { get; set; } = string.Empty;
+    }
+}

@@ -1,0 +1,142 @@
+@page "/account/2fa-setup"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<MJAutomationCloud.Infrastructure.Entities.ApplicationUser> UserManager
+@inject NavigationManager Nav
+@inject ILogger<TwoFactorSetup> Logger
+@using System.Text.Encodings.Web
+@using QRCoder
+
+<h3>Two-Factor Authentication Setup</h3>
+
+@if (_completed)
+{
+    <div class="alert alert-success">2FA activated. Redirecting to login...</div>
+}
+
+@if(!_loaded)
+{
+    <p>Loading...</p>
+}
+else if(!_completed)
+{
+    <p>Scan this code with your authenticator app or enter the secret manually.</p>
+    <div class="mb-3">
+        <label>Secret</label>
+        <code>@_formattedSecret</code>
+    </div>
+    @if(!string.IsNullOrEmpty(_qrPngDataUrl))
+    {
+        <div class="mb-3">
+            <img src="@_qrPngDataUrl" alt="Authenticator QR Code" />
+        </div>
+    }
+    <div class="mb-3">
+        <label>Verification Code</label>
+        <InputText @bind-Value="_code" class="form-control" />
+    </div>
+    <button class="btn btn-primary" disabled="@_busy" @onclick="Activate">Activate 2FA</button>
+}
+
+@code {
+    private string? _email;
+    private MJAutomationCloud.Infrastructure.Entities.ApplicationUser? _user;
+    private string? _secret;
+    private string? _formattedSecret;
+    private string? _qrPngDataUrl;
+    private string _code = string.Empty;
+    private bool _busy;
+    private bool _completed;
+    private bool _loaded;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var uri = Nav.ToAbsoluteUri(Nav.Uri);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        _email = query.Get("email");
+        if (_email == null)
+        {
+            _error = "Missing email parameter.";
+            return;
+        }
+        _user = await UserManager.FindByEmailAsync(_email);
+        if (_user == null)
+        {
+            _error = "User not found.";
+            return;
+        }
+        // Retrieve existing authenticator key (created in registration) or generate if absent
+        var key = await UserManager.GetAuthenticatorKeyAsync(_user);
+        if (string.IsNullOrEmpty(key))
+        {
+            await UserManager.ResetAuthenticatorKeyAsync(_user);
+            key = await UserManager.GetAuthenticatorKeyAsync(_user);
+        }
+        _secret = key;
+        _formattedSecret = FormatKey(key);
+        _qrPngDataUrl = GenerateQrCodeDataUrl(_email, key, "MJAutomationCloud");
+        _loaded = true;
+    }
+
+    private async Task Activate()
+    {
+        if (_user == null || string.IsNullOrWhiteSpace(_code)) return;
+        _busy = true;
+        try
+        {
+            var valid = await UserManager.VerifyTwoFactorTokenAsync(_user, TokenOptions.DefaultAuthenticatorProvider, _code);
+            if (!valid)
+            {
+                _error = "Invalid code. Retry.";
+                return;
+            }
+            await UserManager.SetTwoFactorEnabledAsync(_user, true);
+            Logger.LogInformation("2FA activated for {Email}", _user.Email);
+            _completed = true;
+            Nav.NavigateTo("/account/login", true);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private static string FormatKey(string key)
+    {
+        var result = new System.Text.StringBuilder();
+        int currentPosition = 0;
+        while (currentPosition + 4 < key.Length)
+        {
+            result.Append(key.AsSpan(currentPosition, 4)).Append(' ');
+            currentPosition += 4;
+        }
+        if (currentPosition < key.Length)
+        {
+            result.Append(key.AsSpan(currentPosition));
+        }
+        return result.ToString().ToUpperInvariant();
+    }
+
+    private static string GenerateQrCodeUri(string email, string key, string issuer)
+    {
+        const string authenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
+        return string.Format(
+            authenticatorUriFormat,
+            UrlEncoder.Default.Encode(issuer),
+            UrlEncoder.Default.Encode(email),
+            key);
+    }
+
+    private static string GenerateQrCodeDataUrl(string? email, string key, string issuer)
+    {
+        if (string.IsNullOrEmpty(email)) return string.Empty;
+        var uri = GenerateQrCodeUri(email, key, issuer);
+        using var generator = new QRCodeGenerator();
+        using var data = generator.CreateQrCode(uri, QRCodeGenerator.ECCLevel.Q);
+        using var qrCode = new PngByteQRCode(data);
+        var pngBytes = qrCode.GetGraphic(10);
+        var base64 = Convert.ToBase64String(pngBytes);
+        return $"data:image/png;base64,{base64}";
+    }
+}
