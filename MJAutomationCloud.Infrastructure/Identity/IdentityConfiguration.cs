@@ -18,10 +18,10 @@ public static class IdentityConfiguration
     public static void ConfigureIdentityOptions(IdentityOptions options)
     {
         // Password policy configuration based on domain constants
-        options.Password.RequireDigit = true;
-        options.Password.RequireLowercase = true;
-        options.Password.RequireUppercase = true;
-        options.Password.RequireNonAlphanumeric = true;
+        options.Password.RequireDigit = false;
+        options.Password.RequireLowercase = false;
+        options.Password.RequireUppercase = false;
+        options.Password.RequireNonAlphanumeric = false;
         options.Password.RequiredLength = DomainConstants.Authentication.MinPasswordLength;
         options.Password.RequiredUniqueChars = 4;
 

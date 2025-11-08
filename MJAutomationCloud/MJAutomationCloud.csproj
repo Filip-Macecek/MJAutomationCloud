@@ -11,4 +11,8 @@
       <ProjectReference Include="..\MJAutomationCloud.Application\MJAutomationCloud.Application.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="QRCoder" Version="1.7.0" />
+    </ItemGroup>
+
 </Project>

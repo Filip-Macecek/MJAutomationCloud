@@ -4,6 +4,7 @@ using MJAutomationCloud.Application;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
 using MJAutomationCloud.Infrastructure.Entities;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +19,11 @@ builder.Services.AddIdentity<ApplicationUser, Microsoft.AspNetCore.Identity.Iden
     // Configure Identity options using our domain configuration
     MJAutomationCloud.Infrastructure.Identity.IdentityConfiguration.ConfigureIdentityOptions(options);
 })
-.AddEntityFrameworkStores<MJAutomationCloud.Infrastructure.Data.ApplicationDbContext>();
+.AddEntityFrameworkStores<MJAutomationCloud.Infrastructure.Data.ApplicationDbContext>()
+.AddDefaultTokenProviders();
+
+// Add custom password validator
+builder.Services.AddTransient<Microsoft.AspNetCore.Identity.IPasswordValidator<ApplicationUser>, MJAutomationCloud.Application.Services.PasswordStrengthValidator<ApplicationUser>>();
 
 // Configure authentication cookies
 builder.Services.ConfigureApplicationCookie(options =>
