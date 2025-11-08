@@ -1,17 +1,23 @@
 <!--
 Sync Impact Report
-Version: (none) -> 1.0.0
-Modified Principles: (template placeholders replaced with concrete principles)
-Added Sections: Architecture Constraints & Technology Standards; Development Workflow & Quality Gates
-Removed Sections: None (template placeholders replaced)
+Version: 1.0.0 -> 1.1.0
+Modified Principles: None (existing principles unchanged)
+Added Sections: Principle VI (Framework-First Development)
+Removed Sections: None
 Templates Updated: 
-	- .specify/templates/plan-template.md ✅
-	- .specify/templates/spec-template.md ✅
-	- .specify/templates/tasks-template.md ✅ (gates reference added)
-	- .specify/templates/checklist-template.md ✅ (no conflicting references; left generic)
-	- .specify/templates/agent-file-template.md ✅ (added principles reference placeholder guidance)
+	- .specify/templates/plan-template.md ✅ (added Principle VI gate check)
+	- .specify/templates/spec-template.md ✅ (no changes required - principle is implementation-focused)
+	- .specify/templates/tasks-template.md ✅ (no changes required - tasks already reference plan gates)
+	- .specify/templates/checklist-template.md ✅ (no changes required - generic quality checks)
+	- .specify/templates/agent-file-template.md ✅ (no changes required - agent guidance unchanged)
+Quality Gates Updated:
+	- Added gate 6: Principle VI framework-first evaluation requirement
 Deferred TODOs:
 	- RATIFICATION_DATE (original adoption date unknown – needs confirmation)
+Amendment Rationale:
+	- MINOR version bump justified: New principle added without removing or redefining existing principles.
+	- Principle VI codifies existing best practice (prefer .NET built-ins) as formal governance rule.
+	- Addresses technical debt risk from custom authentication/session implementations.
 -->
 
 # MJAutomationCloud Constitution
@@ -61,6 +67,19 @@ an emergency stop command; all such events are logged and surfaced in reporting.
 
 Rationale: Provides traceability for production incidents and supports continuous optimization & safety.
 
+### VI. Framework-First Development (NON-NEGOTIABLE)
+Always leverage built-in .NET framework capabilities before implementing custom solutions. ASP.NET Core
+Identity MUST be used for user authentication, session management, password hashing, and security token
+generation—do not reinvent authentication mechanisms. Entity Framework Core conventions and built-in
+features (migrations, change tracking, query optimization) MUST be preferred over custom data access
+patterns. Blazor's component lifecycle, data binding, and built-in validation MUST be utilized before
+creating custom abstractions. When framework features exist for a requirement (logging, configuration,
+dependency injection, middleware, authorization policies), they MUST be evaluated and used unless a
+documented, specific limitation prevents their use.
+
+Rationale: Reduces maintenance burden, leverages battle-tested security implementations, ensures upgrade
+path compatibility, and prevents accumulation of custom code debt that duplicates framework capabilities.
+
 ## Architecture Constraints & Technology Standards
 
 Stack: .NET 8 (assumed) + Blazor Server/WebAssembly (front-end), EF Core for persistence, ASP.NET Identity
@@ -86,7 +105,8 @@ Quality Gates (PR MUST NOT MERGE if failing):
 3. Principle III idempotency & state transition clarity documented.
 4. Principle IV conversion tests added/updated if GCode logic touched.
 5. Principle V logging & metrics coverage for new operational paths.
-6. No TODOs remaining except explicitly approved by maintainer.
+6. Principle VI framework-first evaluation documented (custom solution justified if chosen).
+7. No TODOs remaining except explicitly approved by maintainer.
 
 Definition of Done (Feature): All user stories deliver individually testable value, docs updated (quickstart
 or contracts), tasks.md reflects completion, and observability signals deployed.
@@ -114,5 +134,5 @@ sample job logs, conversion accuracy metrics, and security events for drift.
 Enforcement: Non-compliant merges MUST trigger a remediation task within 48h. Critical security/safety
 violations trigger immediate hotfix procedure.
 
-**Version**: 1.0.0 | **Ratified**: TODO(RATIFICATION_DATE): original adoption date unknown | **Last Amended**: 2025-11-02
+**Version**: 1.1.0 | **Ratified**: TODO(RATIFICATION_DATE): original adoption date unknown | **Last Amended**: 2025-11-08
 
